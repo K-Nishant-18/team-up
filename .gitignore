@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment variables
+.env
+.env*.local
+
+# Build output
+dist/
+build/
+target/
+*.tsbuildinfo
+out/
+
+# Spring Boot / Java (backend/)
+backend/target/
+*.class
+*.log
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+Thumbs.db
