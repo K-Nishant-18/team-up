@@ -1,3 +1,4 @@
+import { demoRequest, markDemoMode, clearDemoMode } from './demo-data';
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 export class ApiError extends Error {
     status;
@@ -31,7 +32,27 @@ async function request(path, options = {}) {
     const token = getToken();
     if (token)
         headers.Authorization = `Bearer ${token}`;
-    const response = await fetch(`${API_URL}${path}`, { ...options, headers });
+    let response;
+    try {
+        response = await fetch(`${API_URL}${path}`, { ...options, headers });
+    }
+    catch {
+        // fetch only rejects for network-level failures (backend down / offline),
+        // so fall back to the offline demo store and keep the site usable
+        markDemoMode();
+        let parsed;
+        if (options.body) {
+            try {
+                parsed = JSON.parse(options.body);
+            }
+            catch {
+                parsed = undefined;
+            }
+        }
+        return demoRequest((options.method ?? 'GET').toUpperCase(), path, parsed, headers);
+    }
+    // a real response (any status) means the backend is reachable again
+    clearDemoMode();
     if (!response.ok) {
         let message = 'Request failed';
         try {

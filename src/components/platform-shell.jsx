@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { isDemoMode } from '@/lib/demo-data';
 import { Bell, Bookmark, Compass, LayoutDashboard, Plus, Send, Users, UserRoundSearch } from 'lucide-react';
 const items = [
     { label: 'Discover', href: '/posts', icon: Compass },
@@ -15,6 +17,12 @@ export function Avatar({ initials, color = '#c65d3d', small = false, }) {
 }
 export function PlatformShell({ children, title, eyebrow, }) {
     const { pathname } = useLocation();
+    const [demo, setDemo] = useState(isDemoMode());
+    useEffect(() => {
+        const onDemo = (e) => setDemo(Boolean(e.detail));
+        window.addEventListener('teamup:demo-mode', onDemo);
+        return () => window.removeEventListener('teamup:demo-mode', onDemo);
+    }, []);
     return (<div className="blueprint min-h-screen bg-paper">
       <header className="flex h-[76px] items-center justify-between bg-ink px-11 text-paper max-[720px]:h-[68px] max-[720px]:px-[18px]">
         <Link to="/" className="grid grid-cols-[25px_auto] grid-rows-[28px_12px] items-center gap-x-[7px] font-mono text-2xl leading-none font-bold tracking-[-1.5px] max-[720px]:text-xl">
@@ -98,6 +106,9 @@ export function PlatformShell({ children, title, eyebrow, }) {
           {children}
         </main>
       </div>
+      {demo && (<div role="status" className="fixed bottom-4 left-4 z-20 border border-line bg-paper-deep px-3 py-2 font-mono text-[10px] tracking-[0.8px] text-muted shadow-[3px_3px_0_rgba(0,0,0,0.12)]">
+          DEMO DATA // BACKEND OFFLINE
+        </div>)}
     </div>);
 }
 export function SectionCard({ children, className = '', id, }) {
