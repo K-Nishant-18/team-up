@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "TeamUp — System Architecture",
+    "output": "teamup-architecture.html",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "views": [
+      { "id": "request-path", "label": "API request path", "focus": ["browser", "spa", "apiclient", "security", "controllers", "jpa", "h2"], "note": "Follow one authenticated REST call from the browser to the in-memory database." },
+      { "id": "offline-fallback", "label": "Offline demo fallback", "focus": ["apiclient", "demo"], "note": "See how the client keeps working when the backend is unreachable." }
+    ]
+  },
+  "components": [
+    { "id": "browser", "type": "external", "label": "Browser", "sublabel": "Student device", "pos": [40, 40], "size": [100, 72] },
+    { "id": "spa", "type": "frontend", "label": "React SPA", "sublabel": "Vite 7 · React Router · Tailwind 4", "tag": "14 routes", "pos": [190, 170], "size": [140, 72] },
+    { "id": "apiclient", "type": "frontend", "label": "api.js client", "sublabel": "fetch wrapper · Bearer token", "pos": [380, 170], "size": [130, 72] },
+    { "id": "security", "type": "security", "label": "Spring Security", "sublabel": "JWT filter · BCrypt(12)", "pos": [560, 170], "size": [140, 72] },
+    { "id": "controllers", "type": "backend", "label": "REST Controllers", "sublabel": "Auth · Posts · Users · Requests · Comments · Notifications", "tag": "7 controllers · ~23 endpoints", "pos": [40, 380], "size": [220, 72] },
+    { "id": "jpa", "type": "backend", "label": "Spring Data JPA", "sublabel": "Repositories", "pos": [310, 380], "size": [130, 72] },
+    { "id": "h2", "type": "database", "label": "H2 Database", "sublabel": "in-memory · create-drop", "tag": "DataSeeder", "pos": [490, 380], "size": [130, 72] },
+    { "id": "demo", "type": "frontend", "label": "Offline demo store", "sublabel": "sessionStorage-backed mock API", "pos": [740, 380], "size": [140, 72] }
+  ],
+  "connections": [
+    { "id": "load-app", "from": "browser", "to": "spa", "label": "loads SPA", "labelAt": [175, 141] },
+    { "id": "page-calls", "from": "spa", "to": "apiclient", "label": "useFetch / api.*", "labelAt": [355, 260] },
+    { "id": "rest-call", "from": "apiclient", "to": "security", "label": "REST /api · Bearer JWT", "variant": "security", "labelAt": [535, 260] },
+    { "id": "authz", "from": "security", "to": "controllers", "label": "authenticated request", "fromSide": "bottom", "toSide": "top", "labelAt": [400, 311] },
+    { "id": "repo-ops", "from": "controllers", "to": "jpa", "label": "repository ops", "fromSide": "bottom", "toSide": "bottom" },
+    { "id": "sql", "from": "jpa", "to": "h2", "label": "SQL" },
+    { "id": "offline-fallback", "from": "apiclient", "to": "demo", "label": "fetch fails → demo store", "variant": "dashed", "fromSide": "top", "toSide": "top", "labelAt": [810, 245] }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Client", "items": ["Vite 7 + React 19 SPA with 14 routes", "api.js: fetch wrapper, JWT kept in localStorage", "Offline demo store kicks in when the backend is down"] },
+    { "dot": "emerald", "title": "API server", "items": ["Spring Security: stateless JWT filter, BCrypt(12)", "7 controllers, ~23 REST endpoints, no service layer", "Spring Data JPA repositories"] },
+    { "dot": "rose", "title": "Data & security", "items": ["H2 in-memory, wiped on every restart", "DataSeeder re-creates 5 users and 4 posts on boot", "CORS allows localhost:5173 / 4173 only"] }
+  ]
+}
