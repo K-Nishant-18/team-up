@@ -1,0 +1,3 @@
+# Study-pack diagrams are generated reference material, not source code.
+# Excludes them from GitHub language statistics (linguist-documentation).
+UnderstandThisProject/** linguist-documentation
