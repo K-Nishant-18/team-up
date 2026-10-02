@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "TeamUp — Auth & API Lifecycle",
+    "output": "teamup-auth-sequence.html",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "viewBox": [1080, 650],
+    "column_fit": "spread",
+    "views": [
+      { "id": "login", "label": "Login to JWT", "focus": ["client", "security", "controllers"], "note": "Watch email + password turn into a signed JWT." },
+      { "id": "data-read", "label": "Authenticated read", "focus": ["controllers", "jpa", "h2"], "note": "See how every later call reaches the database." }
+    ]
+  },
+  "participants": [
+    { "id": "client", "type": "frontend", "label": "React SPA", "sublabel": "api.js + token" },
+    { "id": "security", "type": "security", "label": "Security", "sublabel": "JWT filter" },
+    { "id": "controllers", "type": "backend", "label": "Controller", "sublabel": "Auth / Posts" },
+    { "id": "jpa", "type": "backend", "label": "JPA Repo", "sublabel": "Spring Data" },
+    { "id": "h2", "type": "database", "label": "H2", "sublabel": "in-memory" }
+  ],
+  "segments": [
+    { "from": 152, "to": 348, "label": "Login" },
+    { "from": 376, "to": 574, "label": "Authenticated request" }
+  ],
+  "messages": [
+    { "id": "login-post", "from": "client", "to": "security", "y": 160, "label": "POST /api/auth/login", "variant": "emphasis" },
+    { "id": "permit", "from": "security", "to": "controllers", "y": 188, "label": "permit public route" },
+    { "id": "find-user", "from": "controllers", "to": "jpa", "y": 216, "label": "find user by email" },
+    { "id": "select-users", "from": "jpa", "to": "h2", "y": 244, "label": "SELECT users" },
+    { "id": "user-row", "from": "h2", "to": "jpa", "y": 274, "label": "user row", "variant": "return" },
+    { "id": "user-record", "from": "jpa", "to": "controllers", "y": 304, "label": "user record", "variant": "return" },
+    { "id": "jwt-out", "from": "controllers", "to": "client", "y": 334, "label": "200 + JWT", "variant": "return", "note": "BCrypt(12) match, HS256 token kept in localStorage" },
+    { "id": "authed-get", "from": "client", "to": "security", "y": 384, "label": "GET /api/posts + Bearer", "variant": "security" },
+    { "id": "verify-token", "from": "security", "to": "controllers", "y": 412, "label": "verify signature + expiry" },
+    { "id": "load-posts", "from": "controllers", "to": "jpa", "y": 440, "label": "load posts + creators" },
+    { "id": "select-posts", "from": "jpa", "to": "h2", "y": 468, "label": "SELECT posts, users" },
+    { "id": "rows", "from": "h2", "to": "jpa", "y": 498, "label": "rows", "variant": "return" },
+    { "id": "entities", "from": "jpa", "to": "controllers", "y": 528, "label": "entities", "variant": "return" },
+    { "id": "posts-json", "from": "controllers", "to": "client", "y": 558, "label": "200 JSON posts[]", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "client", "from": 155, "to": 564, "type": "frontend" },
+    { "participant": "security", "from": 156, "to": 194, "type": "security" },
+    { "participant": "security", "from": 380, "to": 418, "type": "security" },
+    { "participant": "controllers", "from": 184, "to": 340, "type": "backend" },
+    { "participant": "controllers", "from": 408, "to": 564, "type": "backend" },
+    { "participant": "jpa", "from": 212, "to": 310, "type": "backend" },
+    { "participant": "jpa", "from": 436, "to": 534, "type": "backend" },
+    { "participant": "h2", "from": 240, "to": 280, "type": "database" },
+    { "participant": "h2", "from": 464, "to": 504, "type": "database" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Login", "items": ["JWT filter → AuthController", "BCrypt check, HS256 signed", "Token in localStorage"] },
+    { "dot": "emerald", "title": "Authenticated read", "items": ["Bearer token every call", "Checks signature + expiry", "Controller → JPA → H2"] },
+    { "dot": "rose", "title": "Guards", "items": ["401 no token, 403 bad owner", "409 duplicate join / accept", "CORS: localhost:5173/4173"] }
+  ]
+}
