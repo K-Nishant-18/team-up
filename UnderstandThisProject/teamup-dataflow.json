@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "TeamUp — Data Model & Data Flow",
+    "output": "teamup-dataflow.html",
+    "viewBox": [940, 530],
+    "quality_profile": "showcase",
+    "locale": "en",
+    "views": [
+      { "id": "write-path", "label": "Write path", "focus": ["seed", "ui_writes", "api", "jpa", "h2"], "note": "Follow mutations from user actions and the seeder into H2." },
+      { "id": "read-path", "label": "Read path", "focus": ["h2", "feed", "dash", "notes"], "note": "See which tables back each screen." }
+    ]
+  },
+  "stages": [
+    { "label": "Sources" },
+    { "label": "API + Security" },
+    { "label": "Persist" },
+    { "label": "Consume" }
+  ],
+  "nodes": [
+    { "id": "seed", "type": "backend", "label": "DataSeeder", "sublabel": "5 users · 4 posts", "stage": 0, "row": 0 },
+    { "id": "ui_writes", "type": "frontend", "label": "User actions", "sublabel": "posts · joins · comments", "stage": 0, "row": 2, "tag": "JWT auth'd" },
+    { "id": "api", "type": "backend", "label": "REST Controllers", "sublabel": "JWT guards", "stage": 1, "row": 1, "tag": "~23 endpoints" },
+    { "id": "jpa", "type": "backend", "label": "JPA Repos", "sublabel": "6 entities", "stage": 2, "row": 0 },
+    { "id": "h2", "type": "database", "label": "H2 Tables", "sublabel": "users · posts · comments", "stage": 2, "row": 1, "tag": "create-drop" },
+    { "id": "feed", "type": "frontend", "label": "Feed + Search", "sublabel": "posts + creators", "stage": 3, "row": 0 },
+    { "id": "dash", "type": "frontend", "label": "Dashboard", "sublabel": "mine + counts", "stage": 3, "row": 1 },
+    { "id": "notes", "type": "frontend", "label": "Notifications", "sublabel": "unread badge", "stage": 3, "row": 2 }
+  ],
+  "flows": [
+    { "id": "boot-seed", "from": "seed", "to": "jpa", "label": "boot seed", "classification": "startup write", "variant": "dashed", "channelY": 116 },
+    { "id": "user-writes", "from": "ui_writes", "to": "api", "label": "authenticated writes", "classification": "POST / PATCH / DELETE", "variant": "emphasis" },
+    { "id": "repo-ops", "from": "api", "to": "jpa", "label": "repository ops", "classification": "read / write" },
+    { "id": "sql-persist", "from": "jpa", "to": "h2", "label": "SQL", "classification": "read / write", "variant": "emphasis", "labelAt": [530, 200] },
+    { "id": "feed-read", "from": "h2", "to": "feed", "label": "posts + profiles", "classification": "read-only", "labelAt": [637, 215] },
+    { "id": "dash-read", "from": "h2", "to": "dash", "label": "mine + counts", "classification": "read-only", "channelY": 300, "labelAt": [690, 314] },
+    { "id": "notes-read", "from": "h2", "to": "notes", "label": "events", "classification": "read-only", "labelAt": [637, 345] }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Write path", "items": ["Every mutation passes JWT-authenticated controllers", "JPA repositories persist entities into H2", "DataSeeder re-creates demo users and posts on each boot"] },
+    { "dot": "cyan", "title": "Entities", "items": ["User, Post, Comment, JoinRequest, Notification", "Posts embed roles and skills in a JSON payload", "Saved posts stay client-side in localStorage"] },
+    { "dot": "rose", "title": "Read path", "items": ["Feed, dashboard, and notifications query the same tables", "Creator info is joined into every post payload", "An offline demo store mirrors the API shape when the backend is down"] }
+  ]
+}
