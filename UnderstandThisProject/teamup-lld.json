@@ -1,0 +1,292 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "TeamUp — Low-Level Design",
+    "output": "teamup-lld.html",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "views": [
+      {
+        "id": "content-core",
+        "label": "Content core",
+        "focus": [
+          "user",
+          "post",
+          "postrole",
+          "comment"
+        ],
+        "note": "How users author posts and comments — the base content graph of the platform."
+      },
+      {
+        "id": "requests-events",
+        "label": "Requests & events",
+        "focus": [
+          "post",
+          "joinrequest",
+          "notification"
+        ],
+        "note": "Join requests attach to posts and fan out typed notifications to users."
+      }
+    ],
+    "viewBox": [
+      936,
+      526
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "database",
+      "label": "User",
+      "sublabel": "name · email · password · skills[] · role",
+      "tag": "users",
+      "pos": [
+        50,
+        250
+      ],
+      "size": [
+        170,
+        72
+      ]
+    },
+    {
+      "id": "post",
+      "type": "database",
+      "label": "Post",
+      "sublabel": "title · category · status · mode · deadline",
+      "tag": "posts",
+      "pos": [
+        350,
+        120
+      ],
+      "size": [
+        170,
+        72
+      ]
+    },
+    {
+      "id": "postrole",
+      "type": "database",
+      "label": "PostRole",
+      "sublabel": "roleName · count · skills[]",
+      "tag": "post_roles",
+      "pos": [
+        350,
+        340
+      ],
+      "size": [
+        170,
+        72
+      ]
+    },
+    {
+      "id": "comment",
+      "type": "database",
+      "label": "Comment",
+      "sublabel": "body · createdAt",
+      "tag": "comments",
+      "pos": [
+        670,
+        60
+      ],
+      "size": [
+        170,
+        72
+      ]
+    },
+    {
+      "id": "joinrequest",
+      "type": "database",
+      "label": "JoinRequest",
+      "sublabel": "role · message · status · respondedAt",
+      "tag": "join_requests",
+      "pos": [
+        670,
+        250
+      ],
+      "size": [
+        170,
+        72
+      ]
+    },
+    {
+      "id": "notification",
+      "type": "database",
+      "label": "Notification",
+      "sublabel": "type · message · read",
+      "tag": "notifications",
+      "pos": [
+        670,
+        360
+      ],
+      "size": [
+        170,
+        72
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "com.teamup.user",
+      "wraps": [
+        "user"
+      ],
+      "pad": 24
+    },
+    {
+      "kind": "region",
+      "label": "com.teamup.post",
+      "wraps": [
+        "post",
+        "postrole"
+      ],
+      "pad": 24
+    },
+    {
+      "kind": "region",
+      "label": "com.teamup.comment",
+      "wraps": [
+        "comment"
+      ],
+      "pad": 24
+    },
+    {
+      "kind": "region",
+      "label": "com.teamup.request",
+      "wraps": [
+        "joinrequest",
+        "notification"
+      ],
+      "pad": 24
+    }
+  ],
+  "connections": [
+    {
+      "id": "user-posts",
+      "from": "user",
+      "to": "post",
+      "label": "creator · 1:N",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "user-comments",
+      "from": "user",
+      "to": "comment",
+      "label": "author · 1:N",
+      "fromSide": "top",
+      "toSide": "left",
+      "via": [
+        [
+          135,
+          40
+        ],
+        [
+          620,
+          40
+        ],
+        [
+          620,
+          96
+        ]
+      ]
+    },
+    {
+      "id": "user-requests",
+      "from": "user",
+      "to": "joinrequest",
+      "label": "requester · 1:N",
+      "fromSide": "bottom",
+      "toSide": "left",
+      "via": [
+        [
+          135,
+          452
+        ],
+        [
+          615,
+          452
+        ],
+        [
+          615,
+          286
+        ]
+      ],
+      "labelAt": [
+        375,
+        450
+      ]
+    },
+    {
+      "id": "post-comments",
+      "from": "post",
+      "to": "comment",
+      "label": "1:N · comments",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "post-requests",
+      "from": "post",
+      "to": "joinrequest",
+      "label": "1:N · requests",
+      "fromSide": "right",
+      "toSide": "top"
+    },
+    {
+      "id": "post-roles",
+      "from": "post",
+      "to": "postrole",
+      "label": "1:N · cascade delete",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        435,
+        206
+      ]
+    },
+    {
+      "id": "req-notifs",
+      "from": "joinrequest",
+      "to": "notification",
+      "label": "relatedRequest?",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        755,
+        341
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Entities",
+      "items": [
+        "6 JPA entities across 4 packages: user, post, comment, request",
+        "Identity-generated keys; fields mirror the DB schema 1:1",
+        "Skills, links and timeline stored as @ElementCollection tables"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Relations",
+      "items": [
+        "User authors posts, comments and join requests (1:N)",
+        "JoinRequest and Notification carry nullable FKs to Post",
+        "5 notification types cover the join-request lifecycle"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Access layer",
+      "items": [
+        "5 Spring Data repositories, one per aggregate root",
+        "Controllers map onto entities: Me/User, Post, JoinRequest",
+        "Responses use UserView/PostView DTOs, no password leaks"
+      ]
+    }
+  ]
+}

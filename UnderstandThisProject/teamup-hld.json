@@ -1,0 +1,308 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "TeamUp — High-Level Design",
+    "output": "teamup-hld.html",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "views": [
+      {
+        "id": "online-path",
+        "label": "Online request path",
+        "focus": [
+          "browser",
+          "spa",
+          "apiclient",
+          "security",
+          "controllers",
+          "jpa",
+          "h2"
+        ],
+        "note": "One authenticated REST call across the client and API tiers into the in-memory store."
+      },
+      {
+        "id": "offline-fallback",
+        "label": "Offline demo fallback",
+        "focus": [
+          "apiclient",
+          "demo"
+        ],
+        "note": "Fetch failures swap to the sessionStorage-backed mock API with no server running."
+      }
+    ],
+    "viewBox": [
+      984,
+      550
+    ]
+  },
+  "components": [
+    {
+      "id": "browser",
+      "type": "external",
+      "label": "Browser",
+      "sublabel": "Student device",
+      "pos": [
+        30,
+        80
+      ],
+      "size": [
+        100,
+        72
+      ]
+    },
+    {
+      "id": "spa",
+      "type": "frontend",
+      "label": "React SPA",
+      "sublabel": "Vite 7 · React 19 · Tailwind 4",
+      "tag": "14 routes",
+      "pos": [
+        190,
+        80
+      ],
+      "size": [
+        140,
+        72
+      ]
+    },
+    {
+      "id": "apiclient",
+      "type": "frontend",
+      "label": "api.js client",
+      "sublabel": "fetch wrapper · Bearer token",
+      "pos": [
+        370,
+        80
+      ],
+      "size": [
+        130,
+        72
+      ]
+    },
+    {
+      "id": "demo",
+      "type": "frontend",
+      "label": "Offline demo store",
+      "sublabel": "sessionStorage-backed mock API",
+      "pos": [
+        700,
+        80
+      ],
+      "size": [
+        150,
+        72
+      ]
+    },
+    {
+      "id": "security",
+      "type": "security",
+      "label": "Spring Security",
+      "sublabel": "JwtAuthFilter · JwtService",
+      "tag": "BCrypt(12)",
+      "pos": [
+        80,
+        260
+      ],
+      "size": [
+        150,
+        72
+      ]
+    },
+    {
+      "id": "controllers",
+      "type": "backend",
+      "label": "REST Controllers",
+      "sublabel": "Auth · Posts · Users · Me · Comments · JoinRequests",
+      "tag": "7 controllers · ~23 endpoints",
+      "pos": [
+        300,
+        260
+      ],
+      "size": [
+        220,
+        72
+      ]
+    },
+    {
+      "id": "jpa",
+      "type": "backend",
+      "label": "Spring Data JPA",
+      "sublabel": "5 repositories",
+      "pos": [
+        570,
+        260
+      ],
+      "size": [
+        130,
+        72
+      ]
+    },
+    {
+      "id": "h2",
+      "type": "database",
+      "label": "H2 Database",
+      "sublabel": "in-memory · create-drop",
+      "tag": "rebuilt each boot",
+      "pos": [
+        540,
+        410
+      ],
+      "size": [
+        140,
+        72
+      ]
+    },
+    {
+      "id": "seeder",
+      "type": "backend",
+      "label": "DataSeeder",
+      "sublabel": "CommandLineRunner",
+      "tag": "5 users · 4 posts",
+      "pos": [
+        740,
+        410
+      ],
+      "size": [
+        140,
+        72
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Client · localhost:5173",
+      "wraps": [
+        "spa",
+        "apiclient",
+        "demo"
+      ],
+      "pad": 36
+    },
+    {
+      "kind": "region",
+      "label": "API server · localhost:4000",
+      "wraps": [
+        "security",
+        "controllers",
+        "jpa"
+      ],
+      "pad": 30
+    }
+  ],
+  "connections": [
+    {
+      "id": "load-app",
+      "from": "browser",
+      "to": "spa",
+      "label": "GET /",
+      "fromSide": "right",
+      "toSide": "left",
+      "labelAt": [
+        160,
+        170
+      ]
+    },
+    {
+      "id": "page-calls",
+      "from": "spa",
+      "to": "apiclient",
+      "label": "useFetch / api.*",
+      "labelAt": [
+        350,
+        170
+      ]
+    },
+    {
+      "id": "rest-call",
+      "from": "apiclient",
+      "to": "security",
+      "label": "REST /api · Bearer JWT",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        435,
+        204
+      ]
+    },
+    {
+      "id": "authz",
+      "from": "security",
+      "to": "controllers",
+      "label": "authenticated request",
+      "labelAt": [
+        283,
+        350
+      ]
+    },
+    {
+      "id": "repo-ops",
+      "from": "controllers",
+      "to": "jpa",
+      "label": "repository ops",
+      "labelAt": [
+        545,
+        350
+      ]
+    },
+    {
+      "id": "sql",
+      "from": "jpa",
+      "to": "h2",
+      "label": "SQL",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "seed",
+      "from": "seeder",
+      "to": "h2",
+      "label": "seeds",
+      "variant": "dashed"
+    },
+    {
+      "id": "offline-fallback",
+      "from": "apiclient",
+      "to": "demo",
+      "label": "fetch fails → demo store",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "top",
+      "labelAt": [
+        600,
+        30
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Runtime",
+      "items": [
+        "Vite dev server on :5173 serves the SPA; Spring Boot API on :4000",
+        "Stateless JWT filter chain, no sessions stored server-side",
+        "CORS restricted to localhost:5173 / 4173 only"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Server",
+      "items": [
+        "7 controllers and ~23 endpoints with no service layer",
+        "Spring Data JPA: 5 repositories, one per aggregate root",
+        "JwtService signs tokens; ApiExceptionHandler handles errors"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Data",
+      "items": [
+        "H2 in-memory with create-drop, rebuilt on every boot",
+        "DataSeeder runs on startup: 5 users and 4 posts",
+        "Offline demo store mirrors API responses in sessionStorage"
+      ]
+    }
+  ]
+}
