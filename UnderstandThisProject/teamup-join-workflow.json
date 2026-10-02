@@ -1,0 +1,66 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "TeamUp — Join Request Workflow",
+    "output": "teamup-join-workflow.html",
+    "viewBox": [1040, 660],
+    "quality_profile": "showcase",
+    "locale": "en",
+    "legend": {
+      "entries": {
+        "frontend": { "label": "UI" },
+        "backend": { "label": "API" },
+        "security": { "label": "Guard" },
+        "messagebus": { "label": "Event" }
+      }
+    }
+  },
+  "lanes": [
+    { "id": "applicant", "label": "Applicant" },
+    { "id": "api", "label": "API + Security" },
+    { "id": "owner", "label": "Post Owner" },
+    { "id": "exceptions", "label": "Guards & Conflicts", "variant": "exception" }
+  ],
+  "phases": [
+    { "id": "apply_phase", "label": "Apply", "fromCol": 0, "toCol": 1 },
+    { "id": "decide", "label": "Decide", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "outcome", "label": "Outcome", "fromCol": 4, "toCol": 5, "variant": "dashed" }
+  ],
+  "groups": [
+    { "id": "denial_paths", "label": "Denial paths", "lane": "exceptions", "fromCol": 2, "toCol": 4, "variant": "security" }
+  ],
+  "mainPath": ["browse", "apply", "guard", "review", "persist", "notified"],
+  "nodes": [
+    { "id": "browse", "lane": "applicant", "col": 0, "type": "frontend", "label": "Browse posts", "sublabel": "discover feed", "width": 128 },
+    { "id": "apply", "lane": "applicant", "col": 1, "type": "frontend", "label": "Send request", "sublabel": "role + message", "tag": "POST join", "width": 128 },
+    { "id": "guard", "lane": "api", "col": 2, "type": "security", "label": "Guard checks", "sublabel": "JWT · ownership", "tag": "401/400/403/409", "width": 128 },
+    { "id": "review", "lane": "owner", "col": 3, "type": "frontend", "label": "Review", "sublabel": "accept or reject", "tag": "owner only", "width": 128 },
+    { "id": "persist", "lane": "api", "col": 4, "type": "backend", "label": "Save decision", "sublabel": "status + member", "width": 128 },
+    { "id": "notified", "lane": "api", "col": 5, "type": "messagebus", "label": "Notify", "sublabel": "in-app badge", "width": 128 },
+    { "id": "guards_failed", "lane": "exceptions", "col": 2, "type": "security", "label": "Request blocked", "sublabel": "401 / 400 / 403", "width": 128 },
+    { "id": "rejected", "lane": "exceptions", "col": 4, "type": "frontend", "label": "Rejected", "sublabel": "status: rejected", "width": 128 }
+  ],
+  "edges": [
+    { "from": "browse", "to": "apply", "role": "main" },
+    { "from": "apply", "to": "guard", "label": "POST /join", "role": "main", "variant": "emphasis", "toSide": "top" },
+    { "from": "guard", "to": "review", "label": "pending · stored", "role": "main", "fromSide": "bottom" },
+    { "from": "review", "to": "persist", "label": "accept", "role": "main", "variant": "emphasis" },
+    { "from": "persist", "to": "notified", "label": "member added", "role": "main", "fromSide": "right", "toSide": "left", "route": "straight" },
+    { "from": "guard", "to": "guards_failed", "label": "blocked", "role": "error", "variant": "security", "channelX": 36 },
+    { "from": "review", "to": "rejected", "label": "reject", "role": "error", "variant": "security", "labelDx": -12 },
+    { "from": "rejected", "to": "notified", "label": "notify applicant", "role": "async", "variant": "dashed", "fromSide": "bottom" }
+  ],
+  "semanticChecks": {
+    "allowedRoots": ["browse"],
+    "allowedTerminals": ["notified", "guards_failed"],
+    "requiredPaths": [
+      { "from": "browse", "to": "notified" }
+    ]
+  },
+  "cards": [
+    { "dot": "emerald", "title": "Happy path", "items": ["Applicant sends role + message", "Guards store it as pending", "Accept → membership → notification"] },
+    { "dot": "rose", "title": "Guards", "items": ["401 missing token · 400 self-join", "409 duplicate join or double accept", "403 non-owner tries to respond"] },
+    { "dot": "cyan", "title": "Both outcomes notify", "items": ["Accept adds member, notifies applicant", "Reject flips status, still notifies", "Unread badge on the shell sidebar"] }
+  ]
+}
