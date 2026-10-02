@@ -11,6 +11,8 @@ TeamUp is a full-stack collaboration platform where students and builders discov
 ![Java](https://img.shields.io/badge/Java-22-ED8B00?logo=openjdk&logoColor=white)
 ![H2](https://img.shields.io/badge/database-H2%20(in--memory)-1B6B93?logo=h2&logoColor=white)
 
+![TeamUp project board](docs/screenshot-board.png)
+
 ---
 
 ## ✨ Features
