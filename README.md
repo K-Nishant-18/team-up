@@ -134,20 +134,5 @@ Base URL: `http://localhost:4000/api`
 
 Authenticated requests need `Authorization: Bearer <token>`.
 
-## 🎨 Design system
-
-Theme tokens live in `src/index.css` via Tailwind v4's `@theme`:
-
-| Token | Value | Role |
-|---|---|---|
-| `ink` | `#17233d` | Primary text / dark surfaces |
-| `paper` / `paper-deep` | `#f3efe4` / `#e8e1d2` | Page background |
-| `line` | `#c9c2b3` | Hairline borders |
-| `orange` | `#e56e3c` | Accent / primary action |
-| `muted` · `green` · `blue` | `#6f746f` · `#5f7d67` · `#5279a8` | Secondary signals |
-
-Plus reusable `blueprint` utilities for the grid-paper background and a mobile-first breakpoint scale (`max-[1050px]`, `max-[720px]`).
 
 ---
-
-Made with ❤️ — issues and PRs welcome.
